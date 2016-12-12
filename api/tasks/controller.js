@@ -1,6 +1,7 @@
 var Task = require('../../models/tasks'),
     logger = require('log4js'),
     log = logger.getLogger('features'),
+    moment = require('moment'),
     md5 = require('md5');
 
 log.setLevel('INFO');
@@ -8,7 +9,8 @@ log.setLevel('INFO');
 var data = {
     get: get,
     post: post,
-    put: put
+    put: put,
+    delete: deleteTask
 }
 
 function get(req, res) {
@@ -71,14 +73,15 @@ function post(req, res) {
 function put(req, res) {
 
     Task.findOneAndUpdate({
-        _id: req.params.id
+        _id: req.params.id,
+        ownerId: res.user.id
     },
-    Object.assign({},req.body),
-    {
-        new: true
-    })
-    .then(editedTask)
-    .catch(error);
+        Object.assign({}, { modificationDate: moment().unix() }, req.body),
+        {
+            new: true
+        })
+        .then(editedTask)
+        .catch(error);
 
     function editedTask(task) {
         if (task && task !== null) {
@@ -87,7 +90,42 @@ function put(req, res) {
                 task: task
             });
         } else {
-            return Promise.reject('[POST] ERROR NO EXISTE TASK');
+            return Promise.reject('[PUT] ERROR NO EXISTE TASK');
+        }
+    }
+
+    function error(err) {
+        log.error('ERROR en TASK: ' + err);
+        res.status(500).send({
+            error: 2
+        });
+    }
+}
+
+function deleteTask(req, res) {
+
+    Task.findOne({
+        _id: req.params.id,
+        ownerId: req.user.id
+    })
+        .then(task => {
+            if (task && task !== null) {
+                return task.remove()
+            } else {
+                return Promise.reject('[DELETE] ERROR NO EXISTE TASK');
+            }
+        })
+        .then(deletedTask)
+        .catch(error);
+
+    function deletedTask(task) {
+        if (task && task !== null) {
+            return res.send({
+                error: 0,
+                task: task
+            });
+        } else {
+            return Promise.reject('[DELETE] ERROR NO EXISTE TASK');
         }
     }
 

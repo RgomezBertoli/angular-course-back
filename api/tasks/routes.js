@@ -7,6 +7,7 @@ router.route('/tasks')
     .post(controller.post);
 
 router.route('/tasks/:id')
-    .put(controller.put);
+    .put(controller.put)
+    .delete(controller.delete);
 
 module.exports = router;
