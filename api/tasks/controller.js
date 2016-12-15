@@ -18,8 +18,8 @@ function get(req, res) {
     var limit = parseInt(req.query.limit ? req.query.limit : 10, 10);
 
     Task.find({
-        ownerId: req.user.id
-    })
+            ownerId: req.user.id
+        })
         .skip(skip)
         .limit(limit)
         .then(checkTasks)
@@ -73,13 +73,12 @@ function post(req, res) {
 function put(req, res) {
 
     Task.findOneAndUpdate({
-        _id: req.params.id,
-        ownerId: res.user.id
-    },
-        Object.assign({}, { modificationDate: moment().unix() }, req.body),
-        {
-            new: true
-        })
+                _id: req.params.id,
+                ownerId: req.user.id
+            },
+            Object.assign({}, { modificationDate: moment().unix() }, req.body), {
+                new: true
+            })
         .then(editedTask)
         .catch(error);
 
@@ -105,9 +104,9 @@ function put(req, res) {
 function deleteTask(req, res) {
 
     Task.findOne({
-        _id: req.params.id,
-        ownerId: req.user.id
-    })
+            _id: req.params.id,
+            ownerId: req.user.id
+        })
         .then(task => {
             if (task && task !== null) {
                 return task.remove()
